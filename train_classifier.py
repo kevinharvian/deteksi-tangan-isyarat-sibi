@@ -1,0 +1,84 @@
+import os
+import cv2
+import mediapipe as mp
+import numpy as np
+import pickle
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Folder data
+data_dir = './data'
+
+# Inisialisasi MediaPipe Hands
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(
+    static_image_mode=True,
+    max_num_hands=1,
+    min_detection_confidence=0.2
+)
+
+# Ambil folder label (A-Z)
+label_folders = sorted([f for f in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, f))])
+label_dict = {i: label for i, label in enumerate(label_folders)}
+label_to_index = {label: idx for idx, label in label_dict.items()}
+
+print("Label mapping:", label_dict)
+
+data = []
+labels = []
+
+for label in label_folders:
+    folder_path = os.path.join(data_dir, label)
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        image = cv2.imread(file_path)
+        if image is None:
+            continue
+        image = cv2.resize(image, (480, 480))
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        result = hands.process(image_rgb)
+        if result.multi_hand_landmarks:
+            hand_landmarks = result.multi_hand_landmarks[0]
+
+            x_ = [lm.x for lm in hand_landmarks.landmark]
+            y_ = [lm.y for lm in hand_landmarks.landmark]
+
+            min_x, max_x = min(x_), max(x_)
+            min_y, max_y = min(y_), max(y_)
+
+            width = max_x - min_x
+            height = max_y - min_y
+
+            if width == 0: width = 1e-6
+            if height == 0: height = 1e-6
+
+            data_aux = []
+            for lm in hand_landmarks.landmark:
+                norm_x = (lm.x - min_x) / width
+                norm_y = (lm.y - min_y) / height
+                data_aux.append(norm_x)
+                data_aux.append(norm_y)
+
+            data.append(data_aux)
+            labels.append(label_to_index[label])
+
+if not data:
+    print("Tidak ada data yang valid.")
+    exit()
+
+# Train model
+X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Evaluasi
+y_pred = model.predict(X_test)
+acc = accuracy_score(y_test, y_pred)
+print(f"Akurasi model: {acc:.2f}")
+
+# Simpan model dan label
+with open('model.p', 'wb') as f:
+    pickle.dump({'model': model, 'labels': label_dict}, f)
+
+print("Model dan label mapping disimpan sebagai 'model.p'")
