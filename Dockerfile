@@ -1,5 +1,5 @@
 # Gunakan Python 3.10 yang cocok dengan mediapipe
-FROM python:3.10-slim
+FROM python:3.10
 
 # Set workdir
 WORKDIR /app
