@@ -1,15 +1,18 @@
 # Gunakan Python 3.10 yang cocok dengan mediapipe
-FROM python:3.10
+FROM python:3.10-bullseye
 
 # Set workdir
 WORKDIR /app
 
-# Copy semua file ke image
-COPY . .
+# Copy requirements dulu biar bisa cache layer pip install
+COPY requirements.txt .
 
 # Install dependensi
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+# Copy semua file ke image
+COPY . .
 
 # Expose port yang dipakai Streamlit
 EXPOSE 8501
