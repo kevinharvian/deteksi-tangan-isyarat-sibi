@@ -1,5 +1,5 @@
 streamlit
 opencv-python-headless==4.7.0.72
-mediapipe==0.9.3.0
+mediapipe==0.10.11
 numpy
 pickle-mixin
