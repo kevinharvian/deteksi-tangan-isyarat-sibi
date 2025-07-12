@@ -1,19 +1,32 @@
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import av
+import cv2  # Tambahkan ini
 import pickle
 import mediapipe as mp
 import numpy as np
 import time
+import asyncio
 
-# Load model
-model_dict = pickle.load(open('./model.p', 'rb'))
-model = model_dict['model']
+# ------------------ Setup Event Loop ------------------
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
-# Label dictionary
+# ------------------ Load Model ------------------
+try:
+    model_dict = pickle.load(open('./model.p', 'rb'))
+    model = model_dict['model']
+except Exception as e:
+    st.error(f"Gagal memuat model: {e}")
+    st.stop()
+
+# ------------------ Label Dictionary ------------------
 labels_dict = {i: chr(65 + i) if i < 26 else str(i - 25) for i in range(36)}
 
-# Inisialisasi state
+# ------------------ Inisialisasi Session ------------------
 for key, value in {
     'sentence': "",
     'last_prediction': None,
@@ -25,7 +38,7 @@ for key, value in {
     if key not in st.session_state:
         st.session_state[key] = value
 
-# MediaPipe
+# ------------------ MediaPipe Setup ------------------
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
@@ -95,7 +108,7 @@ class HandSignProcessor(VideoProcessorBase):
 
         return av.VideoFrame.from_ndarray(image, format="bgr24")
 
-# Tampilan Streamlit
+# ------------------ UI Streamlit ------------------
 st.title("Deteksi Bahasa Isyarat SIBI (via Kamera)")
 st.markdown("Gunakan kamera untuk mendeteksi gesture tangan.")
 
@@ -103,29 +116,35 @@ ctx = webrtc_streamer(
     key="deteksi-gambar",
     mode=WebRtcMode.SENDRECV,
     video_processor_factory=HandSignProcessor,
+    rtc_configuration={  # penting agar STUN server bekerja di Streamlit Cloud
+        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    },
     media_stream_constraints={"video": True, "audio": False},
 )
 
-st.markdown(f"### 📝 Kalimat Terdeteksi: `{st.session_state.sentence}`")
+if ctx.state.playing:
+    st.markdown(f"### 📝 Kalimat Terdeteksi: `{st.session_state.sentence}`")
 
-if st.button("🔁 Reset Kalimat"):
-    if st.session_state.sentence.strip():
-        st.session_state.saved_sentences.append(st.session_state.sentence.strip())
-    st.session_state.sentence = ""
-    st.session_state.last_prediction = None
-    st.session_state.reset_time = 0
-    st.session_state.has_started = False
+    if st.button("🔁 Reset Kalimat"):
+        if st.session_state.sentence.strip():
+            st.session_state.saved_sentences.append(st.session_state.sentence.strip())
+        st.session_state.sentence = ""
+        st.session_state.last_prediction = None
+        st.session_state.reset_time = 0
+        st.session_state.has_started = False
 
-if st.session_state.saved_sentences:
-    st.markdown("---")
-    st.subheader("Kalimat Tersimpan")
-    saved_copy = st.session_state.saved_sentences.copy()
-    for i, sent in enumerate(saved_copy):
-        cols = st.columns([6, 1, 1])
-        cols[0].write(f"`{sent}`")
-        if cols[1].button("🗑️ Hapus", key=f"hapus_{i}"):
-            st.session_state.saved_sentences.pop(i)
-            st.rerun()
-        if cols[2].button("📅 Pakai", key=f"pakai_{i}"):
-            st.session_state.sentence = sent
-            st.rerun()
+    if st.session_state.saved_sentences:
+        st.markdown("---")
+        st.subheader("Kalimat Tersimpan")
+        saved_copy = st.session_state.saved_sentences.copy()
+        for i, sent in enumerate(saved_copy):
+            cols = st.columns([6, 1, 1])
+            cols[0].write(f"`{sent}`")
+            if cols[1].button("🗑️ Hapus", key=f"hapus_{i}"):
+                st.session_state.saved_sentences.pop(i)
+                st.rerun()
+            if cols[2].button("📅 Pakai", key=f"pakai_{i}"):
+                st.session_state.sentence = sent
+                st.rerun()
+else:
+    st.info("Klik 'Allow' untuk mengaktifkan kamera dan mulai deteksi.")
