@@ -1,0 +1,12 @@
+__pycache__/
+*.pkl
+*.csv
+*.mp4
+*.jpg
+*.png
+*.h5
+*.pt
+venv/
+.idea/
+*.log
+.DS_Store
