@@ -4,4 +4,4 @@ opencv-python-headless==4.7.0.72
 mediapipe>=0.10.9
 scikit-learn==1.7.0
 av
-numpy
+numpy<2.0
