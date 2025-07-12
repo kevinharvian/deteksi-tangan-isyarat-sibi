@@ -1,2 +1,14 @@
-[experimental]
-use_pip = true
+[server]
+enableWebsocketCompression = false
+enableXsrfProtection = false
+headless = true
+port = 8501
+enableCORS = false
+
+[theme]
+base = "dark"
+primaryColor = "#F63366"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#FAFAFA"
+font = "sans serif"
