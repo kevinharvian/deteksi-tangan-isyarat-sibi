@@ -466,7 +466,7 @@ elif st.session_state.run:
     
 elif st.session_state.show_pembelajaran:
     st.markdown("### 📚 Panduan Bahasa Isyarat SIBI")
-    st.image("abjad.png", caption="Kosakata Bahasa Isyarat", use_container_width=True)
+    st.image("abjad.png", caption="Abjad Bahasa Isyarat", use_container_width=True)
     frame_placeholder = None
     sentence_placeholder = None
     pembelajaran_placeholder = None
@@ -581,7 +581,7 @@ if st.session_state.run:
             """, unsafe_allow_html=True)
 
         if st.session_state.show_pembelajaran and pembelajaran_placeholder:
-            pembelajaran_placeholder.image("abjad.png", caption="Kosakata Bahasa Isyarat", use_container_width=True)
+            pembelajaran_placeholder.image("abjad.png", caption="Abjad Bahasa Isyarat", use_container_width=True)
 
     cap.release()
 
