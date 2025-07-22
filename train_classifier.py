@@ -5,7 +5,9 @@ import numpy as np
 import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Folder data
 data_dir = './data'
@@ -47,11 +49,8 @@ for label in label_folders:
             min_x, max_x = min(x_), max(x_)
             min_y, max_y = min(y_), max(y_)
 
-            width = max_x - min_x
-            height = max_y - min_y
-
-            if width == 0: width = 1e-6
-            if height == 0: height = 1e-6
+            width = max_x - min_x if max_x - min_x != 0 else 1e-6
+            height = max_y - min_y if max_y - min_y != 0 else 1e-6
 
             data_aux = []
             for lm in hand_landmarks.landmark:
@@ -72,13 +71,33 @@ X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2,
 model = RandomForestClassifier()
 model.fit(X_train, y_train)
 
-# Evaluasi
+# Evaluasi model
 y_pred = model.predict(X_test)
 acc = accuracy_score(y_test, y_pred)
 print(f"Akurasi model: {acc:.2f}")
 
-# Simpan model dan label
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+labels_cm = [label_dict[i] for i in sorted(label_dict.keys())]
+
+plt.figure(figsize=(16, 14), dpi=300)  # Tinggi resolusi untuk hasil tajam
+sns.heatmap(cm, annot=True, fmt="d", cmap="YlGnBu", 
+            xticklabels=labels_cm, yticklabels=labels_cm,
+            linewidths=0.5, linecolor='gray', square=True, cbar=True)
+
+plt.title("Confusion Matrix Huruf SIBI (A-Z)", fontsize=16)
+plt.xlabel("Prediksi", fontsize=14)
+plt.ylabel("Label Sebenarnya", fontsize=14)
+plt.xticks(rotation=45)
+plt.yticks(rotation=0)
+plt.tight_layout()
+plt.savefig("confusion_matrix.png", dpi=300, bbox_inches='tight')  # Simpan tajam
+plt.show()
+
+print("✅ Confusion matrix disimpan sebagai 'confusion_matrix.png'")
+
+# Simpan model dan label mapping
 with open('model.p', 'wb') as f:
     pickle.dump({'model': model, 'labels': label_dict}, f)
 
-print("Model dan label mapping disimpan sebagai 'model.p'")
+print("✅ Model dan label mapping disimpan sebagai 'model.p'")
