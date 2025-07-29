@@ -393,7 +393,7 @@ def is_hand_over_help_box(hand_landmarks, W, H):
 # ============================================
 st.markdown("""
 <div class="main-header">
-    <h1>🤟 SIBI Sign Language Detection</h1>
+    <h1>🤟 Deteksi Bahasa Isyarat SIBI </h1>
     <p>Sistem Deteksi Bahasa Isyarat Indonesia yang Cerdas dan Modern</p>
 </div>
 """, unsafe_allow_html=True)
@@ -473,13 +473,18 @@ elif st.session_state.show_pembelajaran:
     
 else:
     st.markdown("""
-    <div class="info-panel">
-        <div style="display: flex; align-items: center; color: #e5e7eb;">
+    <div class="info-panel" style="color: #e5e7eb;">
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
             <span class="info-icon">ℹ️</span>
-            <span>Klik tombol <strong>▶️ Mulai Deteksi</strong> untuk memulai deteksi bahasa isyarat</span>
+            <span style="margin-left: 8px;">Klik tombol <strong>▶️ Mulai Deteksi</strong> untuk memulai deteksi bahasa isyarat</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <span class="info-icon">ℹ️</span>
+            <span style="margin-left: 8px;"><strong> Arahkan Jari Telunjuk ☝️</strong> untuk melihat panduan ketika sedang mendeteksi</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
+
     
     frame_placeholder = st.empty()
     sentence_placeholder = st.empty()
@@ -620,7 +625,7 @@ if st.session_state.saved_sentences:
 st.markdown('<hr class="custom-divider">', unsafe_allow_html=True)
 st.markdown("""
 <div class="upload-section">
-    <h3>📁 Deteksi Dari Gambar</h3>
+    <h3>📁 Deteksi Bahasa Isyarat Dari Gambar</h3>
     <p>Unggah gambar tangan untuk mendapatkan deteksi bahasa isyarat secara otomatis</p>
 </div>
 """, unsafe_allow_html=True)
@@ -689,5 +694,6 @@ st.markdown("""
 <div class="footer-info">
     <p>🤟 <strong>SIBI Sign Language Detection System</strong></p>
     <p>Sistem deteksi bahasa isyarat Indonesia yang menggunakan teknologi Computer Vision dan Machine Learning</p>
+    <p style="margin-top:10px; font-size: 12px; color: gray;">&copy; 2025 Kevin Deniswara Harvian</p>
 </div>
 """, unsafe_allow_html=True)
