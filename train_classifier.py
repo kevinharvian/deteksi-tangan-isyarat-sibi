@@ -3,6 +3,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pickle
+from collections import Counter
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, classification_report
@@ -40,7 +41,6 @@ for label in label_folders:
 
             x_ = [lm.x for lm in hand_landmarks.landmark]
             y_ = [lm.y for lm in hand_landmarks.landmark]
-
             min_x, max_x = min(x_), max(x_)
             min_y, max_y = min(y_), max(y_)
 
@@ -65,6 +65,24 @@ if not data:
 # 2. Train/Test Split dan Model
 # -------------------------------
 X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+
+# ⬇️ Cetak jumlah data
+print(f"\n🔢 Total data: {len(data)}")
+print(f"🔹 Jumlah data latih : {len(X_train)}")
+print(f"🔹 Jumlah data uji    : {len(X_test)}")
+
+# ⬇️ Jumlah data per kelas di data latih
+train_counts = Counter(y_train)
+test_counts = Counter(y_test)
+print("\n📊 Distribusi data latih per kelas:")
+for idx in sorted(train_counts):
+    print(f"{label_dict[idx]}: {train_counts[idx]} data")
+
+print("\n📊 Distribusi data uji per kelas:")
+for idx in sorted(test_counts):
+    print(f"{label_dict[idx]}: {test_counts[idx]} data")
+
+# ⬇️ Train model
 model = RandomForestClassifier()
 model.fit(X_train, y_train)
 
@@ -82,11 +100,11 @@ cm = confusion_matrix(y_test, y_pred)
 labels_cm = [label_dict[i] for i in sorted(label_dict.keys())]
 
 plt.figure(figsize=(16, 14), dpi=300)
-sns.heatmap(cm, annot=True, fmt="d", cmap="YlGnBu", 
+sns.heatmap(cm, annot=True, fmt="d", cmap="YlGnBu",
             xticklabels=labels_cm, yticklabels=labels_cm,
             linewidths=0.5, linecolor='gray', square=True, cbar=True)
 
-plt.title("Confusion Matrix Huruf SIBI (A-Z)", fontsize=16)
+plt.title("Confusion Matrix Huruf SIBI (A–Z)", fontsize=16)
 plt.xlabel("Prediksi", fontsize=14)
 plt.ylabel("Label Sebenarnya", fontsize=14)
 plt.xticks(rotation=45)
